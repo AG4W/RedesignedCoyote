@@ -1,5 +1,4 @@
 # RedesignedCoyote
-Simple, fire-and-forget Event system.
+Simple, fire-and-forget Enum-driven Event system.
 
-Events are defined in the ActionEvent-enum, that's all there is to it.
-Don't forget to call Initialize().
+Events are defined in the GlobalEvent-enum.
