@@ -1,39 +1,54 @@
-﻿using System;
+﻿///Axel Gustafson
+///examples:
+///Event.Subscribe(GlobalEvent.OnSomethingHappenedExample, (object[] args) => SomeMethod());
+///Event.Raise(GlobalEvent.OnSomethingHappenedExample, 34, "someStringArg");
+using System;
 using System.Collections.Generic;
 
-public static class Event
+namespace ag4w.Events
 {
-    static List<Action>[] _actionEvents;
-
-    public static void Initialize()
+    public static class Event
     {
-        _actionEvents = new List<Action>[Enum.GetNames(typeof(ActionEvent)).Length];
+        static List<Action<object[]>>[] _events;
+        static bool _hasInitialized = false;
 
-        for (int i = 0; i < _actionEvents.Length; i++)
-            _actionEvents[i] = new List<Action>();
-    }
+        static void Initialize()
+        {
+            _events = new List<Action<object[]>>[Enum.GetNames(typeof(GlobalEvent)).Length];
 
-    public static void Subscribe(ActionEvent e, Action a)
-    {
-#if UNITY_EDITOR
-        if (a == null)
-            UnityEngine.Debug.LogWarning(e.ToString() + " IS BEING SUBSCRIBED TO WITH NULL ACTION.");
-#endif
-        _actionEvents[(int)e].Add(a);
-    }
-    public static void Unsubscribe(ActionEvent e, Action a)
-    {
-        _actionEvents[(int)e].Remove(a);
-    }
+            for (int i = 0; i < _events.Length; i++)
+                _events[i] = new List<Action<object[]>>();
 
-    public static void Raise(ActionEvent e)
-    {
-        for (int i = 0; i < _actionEvents[(int)e].Count; i++)
-            _actionEvents[(int)e][i]?.Invoke();
+            _hasInitialized = true;
+        }
+
+        //args should not use object[], unncessesary boxing
+        /// <summary>
+        /// Subscribes to the specified event.
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="a"></param>
+        public static void Subscribe(GlobalEvent g, Action<object[]> a)
+        {
+            if (!_hasInitialized)
+                Initialize();
+
+            _events[(int)g].Add(a);
+        }
+        /// <summary>
+        /// Raises the specified event.
+        /// </summary>
+        /// <param name="g"></param>
+        /// <param name="args"></param>
+        public static void Raise(GlobalEvent g, params object[] args)
+        {
+            for (int i = 0; i < _events[(int)g].Count; i++)
+                _events[(int)g][i]?.Invoke(args);
+        }
     }
-}
-public enum ActionEvent
-{
-    OnLeftHandToggled,
-    OnRightHandToggled,
+    public enum GlobalEvent
+    {
+        OnSomethingHappenedExample,
+        OnSomethingElseHappenedExample
+    }
 }
